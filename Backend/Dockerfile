@@ -1,0 +1,31 @@
+FROM openjdk:17-jdk-alpine
+
+# Install curl and maven
+RUN apk --no-cache add curl maven
+
+# Set environment variables
+ENV MYSQL_HOST=${MYSQL_HOST}
+ENV MYSQL_DATABASE=${MYSQL_DATABASE}
+ENV MYSQL_USER=${MYSQL_USER}
+ENV MYSQL_PASSWORD=${MYSQL_PASSWORD}
+
+# Expose port 8080
+EXPOSE 8080
+
+# Set the working directory
+WORKDIR  /app
+
+# Copy the pom.xml file to the working directory
+COPY pom.xml .
+
+# Resolve the dependencies in the pom.xml file
+RUN mvn dependency:resolve
+
+# Copy the source code to the working directory
+COPY src src
+
+# Build the project
+RUN mvn package -DskipTests
+
+# Run the application
+ENTRYPOINT ["java", "-jar", "target/application.jar"]

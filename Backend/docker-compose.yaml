@@ -1,0 +1,45 @@
+services:
+  mysql:
+    container_name: mysql
+    image: mysql:8
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=Charan@2000
+    networks:
+      - stack
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pCharan@2000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  application:
+    container_name: application
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env.docker
+    networks:
+      - stack
+    volumes:
+      - application_data:/app
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+networks:
+  stack:
+    name: stack
+    driver: bridge
+
+volumes:
+  mysql_data:
+    name: mysql_data
+  application_data:
+    name: application_data
